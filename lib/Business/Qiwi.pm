@@ -231,6 +231,10 @@ Business::Qiwi - Implementation of XML protocol for QIWI payments
 
 =back
 
+=head1 VERSION CONTROL
+
+L<http://github.com/ksurent/Business--Qiwi/tree/master>
+
 =head1 AUTHOR
 
 Алексей Суриков E<lt>ksuri@cpan.orgE<gt>
