@@ -23,22 +23,18 @@ class Business::Qiwi {
     method accept_bill(Int $qiwi_txn_id?, Int $trm_txn_id?) {
     }
 
-#    before accept_bill => sub {
-#        my $self = shift;
-#        
-#        Moose->throw_error('You must specify either qiwi_txn_id or trm_txn_id argument')
-#            if not defined $qiwi_txn_id and not defined $trm_txn_id
-#    };
+    before accept_bill(Int $qiwi_txn_id?, Int $trm_txn_id?)  {
+        Moose->throw_error('You must specify either qiwi_txn_id or trm_txn_id argument')
+            if not defined $qiwi_txn_id and not defined $trm_txn_id
+    };
 
     method reject_bill(Int $qiwi_txn_id?, Int $trm_txn_id?) {
     }
 
-#    before reject_bill => sub {
-#        my $self = shift;
-#        
-#        Moose->throw_error('You must specify either qiwi_txn_id or trm_txn_id argument')
-#            if not defined $qiwi_txn_id and not defined $trm_txn_id
-#    };
+    before reject_bill(Int $qiwi_txn_id?, Int $trm_txn_id?) {
+        Moose->throw_error('You must specify either qiwi_txn_id or trm_txn_id argument')
+            if not defined $qiwi_txn_id and not defined $trm_txn_id
+    };
 
     method pay(Str $to, Int $service, Num $amount, Str $comment, Int $id, Int $receipt_id?) {
     }
