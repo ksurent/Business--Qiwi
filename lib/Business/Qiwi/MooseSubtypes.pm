@@ -1,21 +1,27 @@
 package Business::Qiwi::MooseSubtypes;
 
-use MooseX::Types -declare => [qw(Date EntriesList IdsList TxnsList BillsList)];
 use MooseX::Types::Moose qw(Int Str ArrayRef HashRef);
+use MooseX::Types -declare => [qw(Date PBEntry EntriesList IdsList TxnsList BillsList)];
 
-subtype Date => as Str => where { /^\d{2}\.\d{2}\.\d{4}$/ } => message { 'Date must be provided in DD.MM.YYYY format' };
+subtype Date,
+    as Str,
+    where { /^\d{2}\.\d{2}\.\d{4}$/ },
+    message { 'Date must be provided in DD.MM.YYYY format' };
 
-subtype EntriesList => as ArrayRef[HashRef];
-coerce EntriesList => from HashRef => via { [$_] };
+subtype PBEntry,
+    as HashRef,
+    where { defined $_->{id} and defined $_->{title} and defined $_->{account} },
+    message { 'PBEntry must consist of three keys: id, title, account' };
 
-subtype IdsList => as ArrayRef[Int];
-coerce IdsList => from Int => via { [$_] };
+subtype EntriesList, as ArrayRef[PBEntry];
+subtype IdsList,     as ArrayRef[Int];
+subtype TxnsList,    as ArrayRef[Int];
+subtype BillsList,   as ArrayRef[Int];
 
-subtype TxnsList => as ArrayRef[Int];
-coerce TxnsList => from Int => via { [$_] };
-
-subtype BillsList => as ArrayRef[Int];
-coerce BillsList => from Int => via { [$_] };
+coerce EntriesList, from HashRef, via { [$_] };
+coerce IdsList,     from Int,     via { [$_] };
+coerce TxnsList,    from Int,     via { [$_] };
+coerce BillsList,   from Int,     via { [$_] };
 
 1
 

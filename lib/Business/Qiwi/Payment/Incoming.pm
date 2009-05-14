@@ -45,6 +45,7 @@ class Business::Qiwi::Payment::Incoming extends Business::Qiwi::Request {
 };
 
 no Moose;
+no MooseX::Declare;
 
 1
 

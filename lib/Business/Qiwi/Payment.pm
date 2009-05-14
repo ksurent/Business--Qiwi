@@ -52,10 +52,11 @@ class Business::Qiwi::Payment extends Business::Qiwi::Request {
         return {txn    => $payment->getAttribute('transaction-number'),
                 status => $payment->getAttribute('status'),
                 code   => $payment->getAttribute('result-code'),}
-    }
+    };
 };
 
 no Moose;
+no MooseX::Declare;
 
 1
 

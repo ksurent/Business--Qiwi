@@ -20,10 +20,11 @@ class Business::Qiwi::PhoneBook extends Business::Qiwi::Request {
                 $self->_xml_response->find('/response/book-list/book-item')->get_nodelist
             )
         ]
-    }
+    };
 };
 
 no Moose;
+no MooseX::Declare;
 
 1
 

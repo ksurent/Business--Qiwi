@@ -1,12 +1,12 @@
 use MooseX::Declare;
 
-use XML::LibXML;
-require LWP::UserAgent;
-
 class Business::Qiwi::Request {
-    has trm_id   => ( is => 'rw', isa => 'Str', required => 1, );
-    has password => ( is => 'rw', isa => 'Str', required => 1, );
-    has serial   => ( is => 'rw', isa => 'Str', required => 1, );
+    use XML::LibXML;
+    require LWP::UserAgent;
+
+    has trm_id   => ( is => 'rw', isa => Str, required => 1, );
+    has password => ( is => 'rw', isa => Str, required => 1, );
+    has serial   => ( is => 'rw', isa => Str, required => 1, );
 
 #has cipher        => ( is => 'rw', isa => 'Bool', default => 0, );
 #has ciphering_key => (
@@ -28,16 +28,16 @@ class Business::Qiwi::Request {
 #    init_arg => undef,
 #);
 
-    has url              => ( is => 'ro', isa => 'Str',  lazy => 1, default => 'https://www.mobw.ru/term2/xmlutf.jsp', init_arg => undef, );
-    has protocol_version => ( is => 'ro', isa => 'Str',  lazy => 1, default => '4.0', init_arg => undef, );
-    has request_type     => ( is => 'ro', isa => 'Int',  lazy => 1, default => undef, init_arg => undef, );
-    has request          => ( is => 'rw', isa => 'Str',  lazy => 1, default => undef, init_arg => undef, );
-    has code             => ( is => 'rw', isa => 'Int',  lazy => 1, default => undef, init_arg => undef, );
-    has fatal            => ( is => 'rw', isa => 'Bool', lazy => 1, default => undef, init_arg => undef, );
-    has result           => ( is => 'rw', isa => 'Str',  lazy_build => 1, default => undef, init_arg => undef, );
+    has url              => ( is => 'ro', isa => Str,  lazy => 1, default => 'https://www.mobw.ru/term2/xmlutf.jsp', init_arg => undef, );
+    has protocol_version => ( is => 'ro', isa => Str,  lazy => 1, default => '4.0', init_arg => undef, );
+    has request_type     => ( is => 'ro', isa => Int,  lazy => 1, default => undef, init_arg => undef, );
+    has request          => ( is => 'rw', isa => Str,  lazy => 1, default => undef, init_arg => undef, );
+    has code             => ( is => 'rw', isa => Int,  lazy => 1, default => undef, init_arg => undef, );
+    has fatal            => ( is => 'rw', isa => Bool, lazy => 1, default => undef, init_arg => undef, );
+    has result           => ( is => 'rw', isa => Str, lazy_build => 1, init_arg => undef, );
 
-    has _raw_response => ( is => 'rw', isa => 'Str', lazy_build => 1, init_arg => undef, );
-    has _xml_response => ( is => 'rw', isa => 'XML::LibXML::Document', lazy_build => 1, init_arg => undef, );
+    has _raw_response => ( is => 'rw', isa => Str, lazy_build => 1, init_arg => undef, );
+    has _xml_response => ( is => 'rw', isa => XML::LibXML::Document, lazy_build => 1, init_arg => undef, );
 
     method create_request() {
         my $req_node = inner();
@@ -133,6 +133,7 @@ class Business::Qiwi::Request {
 };
 
 no Moose;
+no MooseX::Declare;
 
 1
 

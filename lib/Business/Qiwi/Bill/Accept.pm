@@ -27,10 +27,11 @@ class Business::Qiwi::Bill::Accept extends Business::Qiwi::Request {
         }
         
         $xml
-    }
+    };
 };
 
 no Moose;
+no MooseX::Declare;
 
 1
 

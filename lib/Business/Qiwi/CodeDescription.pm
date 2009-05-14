@@ -26,7 +26,7 @@ class Business::Qiwi::CodeDescription extends Business::Qiwi::Request {
         my $self = shift;
         
         $self->_cache( $self->result )
-    }
+    };
     
     method _cache(HashRef :$result) {
         
@@ -34,6 +34,7 @@ class Business::Qiwi::CodeDescription extends Business::Qiwi::Request {
 };
 
 no Moose;
+no MooseX::Declare;
 
 1
 

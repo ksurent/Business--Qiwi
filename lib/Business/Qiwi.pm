@@ -1,23 +1,24 @@
-{
-    # hi, CPAN, we're here!
-    package Business::Qiwi;
-    our $VERSION = '0.01';
-}
+#{
+#    # hi, CPAN, we're here!
+#    package Business::Qiwi;
+#    our $VERSION = '0.01';
+#}
 
 use MooseX::Declare;
 
-use Business::Qiwi::MooseSubtypes qw(Date EntriesList IdsList TxnsList BillsList);
-
 class Business::Qiwi {
-    has trm_id   => ( is => 'rw', isa => 'Str', required => 1, );
-    has password => ( is => 'rw', isa => 'Str', required => 1, );
-    has serial   => ( is => 'rw', isa => 'Str', required => 1, );
+    use Business::Qiwi::MooseSubtypes qw(Date EntriesList IdsList TxnsList BillsList);
+#    use MooseX::Types::Moose qw(Int Str Num);
+
+    has trm_id   => ( is => 'rw', isa => Str, required => 1, );
+    has password => ( is => 'rw', isa => Str, required => 1, );
+    has serial   => ( is => 'rw', isa => Str, required => 1, );
 
     method create_bill(Num $amount, Str $to, Str $txn, Str $comment, Bool $sms_notify?, Bool $call_notify?, Int $confirm_time?) {
     }
 
-    method get_bill_status(BillsList $bill) {
-    }
+#    method get_bill_status(BillsList $bill) {
+#    }
 
     before accept_bill(Int $qiwi_txn_id?, Int $trm_txn_id?) => sub {
         my $self = shift;
@@ -74,6 +75,7 @@ class Business::Qiwi {
 };
 
 no Moose;
+no MooseX::Declare;
 
 1
 

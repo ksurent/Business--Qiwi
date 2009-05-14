@@ -3,7 +3,7 @@ use MooseX::Declare;
 class Business::Qiwi::AgentExistence extends Business::Qiwi::Request {
     has '+request_type' => ( default => 32, );
 
-    has phone => ( is => 'rw', isa => 'Str', required => 1, );
+    has phone => ( is => 'rw', isa => Str, required => 1, );
 
     augment create_request => sub {
         my $self = shift;
@@ -22,6 +22,7 @@ class Business::Qiwi::AgentExistence extends Business::Qiwi::Request {
 };
 
 no Moose;
+no MooseX::Declare;
 
 1
 

@@ -24,10 +24,11 @@ class Business::Qiwi::Bill extends Business::Qiwi::Request {
         $xml->appendChild( $self->_create_extra_node('ltime', $self->confirm_timeout) );
         
         $xml
-    }
+    };
 };
 
 no Moose;
+no MooseX::Declare;
 
 1
 

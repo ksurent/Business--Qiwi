@@ -32,10 +32,11 @@ class Business::Qiwi::Registration extends Business::Qiwi::Request {
         }
         
         $xml
-    }
+    };
 };
 
 no Moose;
+no MooseX::Declare;
 
 1
 

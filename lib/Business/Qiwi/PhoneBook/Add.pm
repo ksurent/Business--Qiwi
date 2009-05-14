@@ -29,10 +29,11 @@ class Business::Qiwi::PhoneBook::Add extends Business::Qiwi::Request {
         my $self = shift;
         
         return [map($_->data, $self->_xml_response->find('/response/id')->get_nodelist)]
-    }
+    };
 };
 
 no Moose;
+no MooseX::Declare;
 
 1
 

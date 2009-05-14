@@ -5,6 +5,7 @@ class Business::Qiwi::Bill::Reject extends Business::Qiwi::Bill::Accept {
 };
 
 no Moose;
+no MooseX::Declare;
 
 1
 

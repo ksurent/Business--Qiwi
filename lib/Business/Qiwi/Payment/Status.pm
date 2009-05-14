@@ -34,10 +34,11 @@ class Business::Qiwi::Payment::Status extends Business::Qiwi::Request {
             }
             $self->_xml_response->find('/response/payment')->get_nodelist
         }
-    }
+    };
 };
 
 no Moose;
+no MooseX::Declare;
 
 1
 

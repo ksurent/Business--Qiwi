@@ -37,6 +37,7 @@ class Business::Qiwi::Bill::Status extends Business::Qiwi::Request {
 };
 
 no Moose;
+no MooseX::Declare;
 
 1
 

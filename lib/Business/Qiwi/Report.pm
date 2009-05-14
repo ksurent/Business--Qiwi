@@ -36,10 +36,11 @@ class Business::Qiwi::Report extends Business::Qiwi::Request {
         }
         
         \@payments
-    }
+    };
 };
 
 no Moose;
+no MooseX::Declare;
 
 1
 
