@@ -1,6 +1,8 @@
 use MooseX::Declare;
 
 class Business::Qiwi::Request {
+    use MooseX::Types::Moose qw(Int Str Bool);
+
     use XML::LibXML;
     require LWP::UserAgent;
 
@@ -37,7 +39,13 @@ class Business::Qiwi::Request {
     has result           => ( is => 'rw', isa => Str, lazy_build => 1, init_arg => undef, );
 
     has _raw_response => ( is => 'rw', isa => Str, lazy_build => 1, init_arg => undef, );
-    has _xml_response => ( is => 'rw', isa => XML::LibXML::Document, lazy_build => 1, init_arg => undef, );
+    has _xml_response => ( is => 'rw', isa => 'XML::LibXML::Document', lazy_build => 1, init_arg => undef, );
+
+    sub BUILD {
+        my $self = shift;
+
+        $self->create_request;
+    }
 
     method create_request() {
         my $req_node = inner();

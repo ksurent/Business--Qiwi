@@ -1,8 +1,8 @@
-#{
-#    # hi, CPAN, we're here!
-#    package Business::Qiwi;
-#    our $VERSION = '0.01';
-#}
+{
+    # hi, CPAN, we're here!
+    package Business::Qiwi;
+    our $VERSION = '0.01';
+}
 
 use MooseX::Declare;
 
@@ -15,6 +15,20 @@ class Business::Qiwi {
     has serial   => ( is => 'rw', isa => Str, required => 1, );
 
     method create_bill(Num $amount, Str $to, Str $txn, Str $comment, Bool $sms_notify?, Bool $call_notify?, Int $confirm_time?) {
+        require Business::Qiwi::Bill;
+        my $bill = Business::Qiwi::Bill->new(
+            amount => ,
+            to => ,
+            txn => ,
+            comment => ,
+            sms_notify => ,
+            call_notify => ,
+            confirm_time => ,
+        );
+        $bill->create_request;
+        $bill->send_request;
+
+        return $self->result
     }
 
     method get_bill_status(BillsList $bill) {
