@@ -1,6 +1,8 @@
 use MooseX::Declare;
 
 class Business::Qiwi::Request {
+    use MooseX::Types::Moose qw(Str Int Bool HashRef);
+
     use XML::LibXML;
     require LWP::UserAgent;
 
@@ -52,7 +54,7 @@ class Business::Qiwi::Request {
         $self->request($xml->toString)
     }
 
-#after create_request => sub {
+#after create_request() {
 #    my $self = shift;
 #    
 #    return unless $self->cipher;
@@ -64,7 +66,7 @@ class Business::Qiwi::Request {
 #                            unpack('H*', Crypt::TripleDES->new->encrypt3($self->request, $self->ciphering_key));
 #    
 #    $self->request($ciphered_text)
-#};
+#}
 
     method send_request() {
         my $ua = LWP::UserAgent->new(agent => 'Business::Qiwi');
@@ -85,13 +87,13 @@ class Business::Qiwi::Request {
         $self->parse_raw_response
     }
 
-#after send_request => sub {
+#after send_request() {
 #    my $self = shift;
 #    
 #    return unless $self->cipher;
 #    
 #    $self->_raw_response( Crypt::TripleDES->new->decrypt3($self->_raw_response, $self->ciphering_key) )
-#};
+#}
 
     method parse_raw_response() {
         $self->_xml_response( XML::LibXML->new->parse_string($self->_raw_response) );

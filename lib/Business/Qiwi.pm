@@ -7,8 +7,8 @@
 use MooseX::Declare;
 
 class Business::Qiwi {
+    use MooseX::Types::Moose qw(Int Str Num);
     use Business::Qiwi::MooseSubtypes qw(Date EntriesList IdsList TxnsList BillsList);
-#    use MooseX::Types::Moose qw(Int Str Num);
 
     has trm_id   => ( is => 'rw', isa => Str, required => 1, );
     has password => ( is => 'rw', isa => Str, required => 1, );
@@ -17,12 +17,11 @@ class Business::Qiwi {
     method create_bill(Num $amount, Str $to, Str $txn, Str $comment, Bool $sms_notify?, Bool $call_notify?, Int $confirm_time?) {
     }
 
-#    method get_bill_status(BillsList $bill) {
-#    }
+    method get_bill_status(BillsList $bill) {
 
-    before accept_bill(Int $qiwi_txn_id?, Int $trm_txn_id?) => sub {
-        my $self = shift;
-        
+    }
+
+    before accept_bill(Int $qiwi_txn_id?, Int $trm_txn_id?) {
         Moose->throw_error('You must specify either qiwi_txn_id or trm_txn_id argument')
             if not defined $qiwi_txn_id and not defined $trm_txn_id
     };
@@ -30,9 +29,7 @@ class Business::Qiwi {
     method accept_bill(Int $qiwi_txn_id?, Int $trm_txn_id?) {
     }
 
-    before reject_bill(Int $qiwi_txn_id?, Int $trm_txn_id?) => sub {
-        my $self = shift;
-        
+    before reject_bill(Int $qiwi_txn_id?, Int $trm_txn_id?) {
         Moose->throw_error('You must specify either qiwi_txn_id or trm_txn_id argument')
             if not defined $qiwi_txn_id and not defined $trm_txn_id
     };
