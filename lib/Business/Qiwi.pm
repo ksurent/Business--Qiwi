@@ -10,9 +10,12 @@ class Business::Qiwi {
     use MooseX::Types::Moose qw(Int Str Num);
     use Business::Qiwi::MooseSubtypes qw(Date EntriesList IdsList TxnsList BillsList);
 
+    require LWP::UserAgent;
+
     has trm_id   => ( is => 'rw', isa => Str, required => 1, );
     has password => ( is => 'rw', isa => Str, required => 1, );
     has serial   => ( is => 'rw', isa => Str, required => 1, );
+    has _ua      => ( is => 'rw', isa => 'LWP::UserAgent', lazy => 1, default => LWP::UserAgent->new, );
 
     method create_bill(Num $amount, Str $to, Str $txn, Str $comment, Bool $sms_notify?, Bool $call_notify?, Int $confirm_time?) {
     }
