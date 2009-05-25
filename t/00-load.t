@@ -1,4 +1,4 @@
-use Test::More tests => 17;
+use Test::More tests => 16;
 
 BEGIN {
     use_ok 'Business::Qiwi';
@@ -22,5 +22,4 @@ BEGIN {
     use_ok 'Business::Qiwi::Report';
     use_ok 'Business::Qiwi::Balance';
     use_ok 'Business::Qiwi::Registration';
-    use_ok 'Business::Qiwi::CodeDescription';
 }
