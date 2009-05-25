@@ -1,22 +1,20 @@
 use MooseX::Declare;
 
 class Business::Qiwi::Registration extends Business::Qiwi::Request {
+    require Digest::MD5;
+
     has '+request_type' => ( default => 20, );
 
     has password => (
         is => 'rw',
-        isa => 'Str',
+        isa => Str,
         required => 1,
-        trigger => sub {
-            my $self = shift;
-            require Digest::MD5;
-            $self->password( Digest::MD5::md5_hex(shift) )
-        },
+        trigger => sub { shift->password( Digest::MD5::md5_hex(shift) ) },
     );
-    has phone   => ( is => 'rw', isa => 'Str', required => 1, );
-    has confirm => ( is => 'rw', isa => 'Str', lazy => 1, default => undef, );
+    has phone   => ( is => 'rw', isa => Str, required => 1, );
+    has confirm => ( is => 'rw', isa => Str, lazy => 1, default => undef, );
 
-    augment create_request => sub {
+    augment create_request() {
         my $self = shift;
         
         my $xml = $self->_create_simple_node('request');
@@ -28,12 +26,12 @@ class Business::Qiwi::Registration extends Business::Qiwi::Request {
             $xml->appendChild( $self->_create_extra_node('acceptCode', $self->confirm) )
         }
         else {
-            $xml->appendChild( $self->_create_extra_node('forAccept', 0) );
+            $xml->appendChild( $self->_create_extra_node('forAccept', 0) )
         }
         
         $xml
-    };
-};
+    }
+}
 
 no Moose;
 no MooseX::Declare;

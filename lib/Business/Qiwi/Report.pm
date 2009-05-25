@@ -3,10 +3,10 @@ use MooseX::Declare;
 class Business::Qiwi::Report extends Business::Qiwi::Request {
     has '+request_type' => ( default => 8, );
 
-    has since => ( is => 'rw', isa => 'Date', required => 1, );
-    has to    => ( is => 'rw', isa => 'Date', required => 1, );
+    has since => ( is => 'rw', isa => Date, required => 1, );
+    has to    => ( is => 'rw', isa => Date, required => 1, );
 
-    augment create_request => sub {
+    augment create_request() {
         my $self = shift;
         
         my $xml = $self->_create_simple_node('request');
@@ -14,9 +14,9 @@ class Business::Qiwi::Report extends Business::Qiwi::Request {
         $xml->appendChild( $self->_create_extra_node('date-to', $self->to) );
         
         $xml
-    };
+    }
 
-    augment parse_raw_response => sub {
+    augment parse_raw_response() {
         my $self = shift;
         
         my @payments;
@@ -36,8 +36,8 @@ class Business::Qiwi::Report extends Business::Qiwi::Request {
         }
         
         \@payments
-    };
-};
+    }
+}
 
 no Moose;
 no MooseX::Declare;

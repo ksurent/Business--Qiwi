@@ -1,14 +1,12 @@
 use MooseX::Declare;
 
 class Business::Qiwi::Payment::Incoming extends Business::Qiwi::Request {
-    has '+request_type' => ( default => 31, );
+    has +request_type => ( default => 31, );
 
     has since => ( is => 'rw', isa => 'Business::Qiwi::MooseSubtypes::Date', required => 1, );
     has to    => ( is => 'rw', isa => 'Business::Qiwi::MooseSubtypes::Date', required => 1, );
 
-    augment create_request => sub {
-        my $self = shift;
-        
+    augment create_request() {
         my $date_since = $self->_create_extra_node('date-from', $self->since);
         my $date_to = $self->_create_extra_node('date-to', $self->to);
         
@@ -24,11 +22,9 @@ class Business::Qiwi::Payment::Incoming extends Business::Qiwi::Request {
         $xml->appendChild($_) foreach $date_since, $date_to, $from, $to;
         
         $xml
-    };
+    }
 
-    augment parse_raw_response => sub {
-        my $self = shift;
-        
+    augment parse_raw_response() {
         return [
             map +{id         => $_->findvalue('./transaction-number'),
                   date       => $_->findvalue('./txn-date'),
@@ -42,7 +38,7 @@ class Business::Qiwi::Payment::Incoming extends Business::Qiwi::Request {
             $self->_xml_response->find('/response/payments-list/payment')->get_nodelist
         ]
     }
-};
+}
 
 no Moose;
 no MooseX::Declare;

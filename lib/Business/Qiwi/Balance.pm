@@ -3,15 +3,11 @@ use MooseX::Declare;
 class  Business::Qiwi::Balance extends Business::Qiwi::Request {
     has '+request_type' => ( default => 3, );
 
-    augment create_request => sub {
-        my $self = shift;
-        
+    augment create_request() {
         return $self->_create_simple_node('request')
-    };
+    }
 
-    augment parse_raw_response => sub {
-        my $self = shift;
-        
+    augment parse_raw_response() {
         return $self->_xml_response->findvalue('/response/extra[@name="BALANCE"]')
     }
 };

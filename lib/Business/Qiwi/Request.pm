@@ -1,14 +1,10 @@
 use MooseX::Declare;
 
-class Business::Qiwi::Request {
-    use MooseX::Types::Moose qw(Str Int Bool HashRef);
+class Business::Qiwi::Request extends Business::Qiwi {
+    use MooseX::Types::Moose qw(Int Str Bool HashRef);
 
     use XML::LibXML;
     require LWP::UserAgent;
-
-    has trm_id   => ( is => 'rw', isa => Str, required => 1, );
-    has password => ( is => 'rw', isa => Str, required => 1, );
-    has serial   => ( is => 'rw', isa => Str, required => 1, );
 
 #has cipher        => ( is => 'rw', isa => 'Bool', default => 0, );
 #has ciphering_key => (
@@ -30,21 +26,31 @@ class Business::Qiwi::Request {
 #    init_arg => undef,
 #);
 
-    has url              => ( is => 'ro', isa => Str,  lazy => 1, default => 'https://www.mobw.ru/term2/xmlutf.jsp', init_arg => undef, );
-    has protocol_version => ( is => 'ro', isa => Str,  lazy => 1, default => '4.0', init_arg => undef, );
-    has request_type     => ( is => 'ro', isa => Int,  lazy => 1, default => undef, init_arg => undef, );
-    has request          => ( is => 'rw', isa => Str,  lazy => 1, default => undef, init_arg => undef, );
-    has code             => ( is => 'rw', isa => Int,  lazy => 1, default => undef, init_arg => undef, );
-    has fatal            => ( is => 'rw', isa => Bool, lazy => 1, default => undef, init_arg => undef, );
-    has result           => ( is => 'rw', isa => Str, lazy_build => 1, init_arg => undef, );
+    has url              => ( is => 'ro', isa => Str,  default => 'https://www.mobw.ru/term2/xmlutf.jsp', init_arg => undef, );
+    has protocol_version => ( is => 'ro', isa => Str,  default => '4.0',                                  init_arg => undef, );
+    has request_type     => ( is => 'ro', isa => Int,  init_arg => undef, ); 
+    has code             => ( is => 'rw', isa => Int,  init_arg => undef, );
+    has message          => ( is => 'rw', isa => Str,  init_arg => undef, );
+    has fatal            => ( is => 'rw', isa => Bool, init_arg => undef, );
+    has result           => ( is => 'rw', isa => Str,  init_arg => undef, clearer => 'clear_result', );
 
-    has _raw_response => ( is => 'rw', isa => Str, lazy_build => 1, init_arg => undef, );
-    has _xml_response => ( is => 'rw', isa => 'XML::LibXML::Document', lazy_build => 1, init_arg => undef, );
+    has _request      => ( is => 'rw', isa => Str, init_arg => undef, );
+    has _raw_response => ( is => 'rw', isa => Str, init_arg => undef, );
+    has _xml_response => ( is => 'rw', isa => 'XML::LibXML::Document', init_arg => undef, clearer => 'clear_xml_response', );
+
+#    has _messages => (
+#        is       => 'ro',
+#        isa      => HashRef,
+#        lazy     => 1,
+#        default  => sub { return { map( split(' '), <DATA> ) } },
+#        init_arg => undef,
+#    );
 
     sub BUILD {
         my $self = shift;
 
         $self->create_request;
+        $self->send_request
     }
 
     method create_request() {
@@ -57,7 +63,7 @@ class Business::Qiwi::Request {
         my $xml = XML::LibXML::Document->new('1.0', 'utf-8');
         $xml->setDocumentElement($req_node);
         
-        $self->request($xml->toString)
+        $self->_request($xml->toString)
     }
 
 #after create_request() {
@@ -71,16 +77,15 @@ class Business::Qiwi::Request {
 #                            $self->trm_id,
 #                            unpack('H*', Crypt::TripleDES->new->encrypt3($self->request, $self->ciphering_key));
 #    
-#    $self->request($ciphered_text)
+#    $self->_request($ciphered_text)
 #}
 
     method send_request() {
-        my $ua = LWP::UserAgent->new(agent => 'Business::Qiwi');
-        my $res = $ua->request(
+        my $res = LWP::UserAgent->new->request(
             HTTP::Request->new(
                 POST => $self->url,
                 undef,
-                $self->request,
+                $self->_request,
             ),
         );
         unless($res->is_success) {
@@ -110,13 +115,14 @@ class Business::Qiwi::Request {
         if($self->code or $self->fatal) {
             $self->clear_xml_response;
             $self->clear_result;
+#            $self->message( $self->get_code_dsc );
             return
         }
         
         $self->result( inner() )
     }
 
-    method _create_simple_node(Str :$name, Str :$value?, HashRef :$attrs?) {
+    method _create_simple_node(Str $name, Str $value?, HashRef $attrs?) {
         my $node = XML::LibXML::Element->new($name);
         $node->appendText($value) if defined $value;
         
@@ -127,7 +133,7 @@ class Business::Qiwi::Request {
         $node
     }
 
-    method _create_extra_node(Str :$name, Str :$value?, HashRef :$attrs?) {
+    method _create_extra_node(Str $name, Str $value?, HashRef $attrs?) {
         my $node = XML::LibXML::Element->new('extra');
         $node->setAttribute('name', $name);
         $node->appendText($value) if defined $value;
@@ -138,7 +144,13 @@ class Business::Qiwi::Request {
         
         $node
     }
-};
+
+#    method get_code_dsc(Int $code?) {
+#        $code = $self->code unless defined $code;
+#
+#        return $self->_messages->{$code}
+#    }
+}
 
 no Moose;
 no MooseX::Declare;

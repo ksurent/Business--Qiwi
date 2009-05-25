@@ -5,18 +5,14 @@ class Business::Qiwi::AgentExistence extends Business::Qiwi::Request {
 
     has phone => ( is => 'rw', isa => Str, required => 1, );
 
-    augment create_request => sub {
-        my $self = shift;
-        
+    augment create_request() {
         my $xml = $self->_create_simple_node('request');
         $xml->appendChild( $self->_create_extra_node('phone', $self->phone) );
         
         $xml
-    };
+    }
 
-    augment parse_raw_response => sub {
-        my $self = shift;
-        
+    augment parse_raw_response() {
         return $self->_xml_response->findvalue('/response/exist') ? 1 : 0
     }
 };

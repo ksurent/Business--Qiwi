@@ -3,13 +3,13 @@ use MooseX::Declare;
 class Business::Qiwi::PhoneBook extends Business::Qiwi::Request {
     has '+request_type' => ( default => 36, );
 
-    augment create_request => sub {
+    augment create_request() {
         my $self = shift;
         
         return $self->_create_simple_node('request')
-    };
+    }
 
-    augment parse_raw_response => sub {
+    augment parse_raw_response() {
         my $self = shift;
         
         return [
@@ -20,8 +20,8 @@ class Business::Qiwi::PhoneBook extends Business::Qiwi::Request {
                 $self->_xml_response->find('/response/book-list/book-item')->get_nodelist
             )
         ]
-    };
-};
+    }
+}
 
 no Moose;
 no MooseX::Declare;

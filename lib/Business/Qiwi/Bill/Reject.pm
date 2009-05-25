@@ -1,8 +1,8 @@
 use MooseX::Declare;
 
 class Business::Qiwi::Bill::Reject extends Business::Qiwi::Bill::Accept {
-    has '+action' => ( default => 'reject', )
-};
+    has +action => ( default => 'reject', )
+}
 
 no Moose;
 no MooseX::Declare;

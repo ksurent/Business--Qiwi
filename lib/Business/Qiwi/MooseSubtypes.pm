@@ -5,7 +5,7 @@ use MooseX::Types -declare => [qw(Date PBEntry EntriesList IdsList TxnsList Bill
 
 subtype Date,
     as Str,
-    where { /^\d{2}\.\d{2}\.\d{4}$/ },
+    where { /^(\d{1,2})\.(\d{1,2})\.\d{4}$/ && $1 >= 0 && $1 <= 31 && $2 >= 1 && $2 <= 12 },
     message { 'Date must be provided in DD.MM.YYYY format' };
 
 subtype PBEntry,

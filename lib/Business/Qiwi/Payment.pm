@@ -3,14 +3,14 @@ use MooseX::Declare;
 class Business::Qiwi::Payment extends Business::Qiwi::Request {
     has '+request_type' => ( default => 10, );
 
-    has to         => ( is => 'rw', isa => 'Str', required => 1, );
-    has service    => ( is => 'rw', isa => 'Int', required => 1, );
-    has amount     => ( is => 'rw', isa => 'Num', required => 1, );
-    has comment    => ( is => 'rw', isa => 'Str', required => 1, );
-    has id         => ( is => 'rw', isa => 'Int', required => 1, );
-    has receipt_id => ( is => 'rw', isa => 'Int', default => int(rand 999999), );
+    has to         => ( is => 'rw', isa => Str, required => 1, );
+    has service    => ( is => 'rw', isa => Int, required => 1, );
+    has amount     => ( is => 'rw', isa => Num, required => 1, );
+    has comment    => ( is => 'rw', isa => Str, required => 1, );
+    has id         => ( is => 'rw', isa => Int, required => 1, );
+    has receipt_id => ( is => 'rw', isa => Int, default => int(rand 999999), );
 
-    augment create_request => sub {
+    augment create_request() {
         my $self = shift;
         
         my $from = $self->_create_simple_node('from');
@@ -26,7 +26,7 @@ class Business::Qiwi::Payment extends Business::Qiwi::Request {
         $receipt->appendChild(
             $self->_create_simple_node(
                 'datetime',
-                sub{local@_=reverse((localtime)[0..5]);$_[0]+=1900;$_[1]+=1;join '',@_}->()
+                sub{local@_=reverse((localtime)[0..5]);$_[0]+=1900;$_[1]+=1;join '',@_}->(),
             )
         );
         
@@ -42,9 +42,9 @@ class Business::Qiwi::Payment extends Business::Qiwi::Request {
         $xml->appendChild($auth);
         
         $xml
-    };
+    }
 
-    augment parse_raw_response => sub {
+    augment parse_raw_response() {
         my $self = shift;
         
         my $payment = $self->_xml_response->find('/response/payment[1]')->shift;
@@ -52,8 +52,8 @@ class Business::Qiwi::Payment extends Business::Qiwi::Request {
         return {txn    => $payment->getAttribute('transaction-number'),
                 status => $payment->getAttribute('status'),
                 code   => $payment->getAttribute('result-code'),}
-    };
-};
+    }
+}
 
 no Moose;
 no MooseX::Declare;

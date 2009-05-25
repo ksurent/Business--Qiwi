@@ -3,15 +3,15 @@ use MooseX::Declare;
 class Business::Qiwi::Bill extends Business::Qiwi::Request {
     has '+request_type' => ( default => 30, );
 
-    has amount          => ( is => 'rw', isa  => 'Num', required => 1, );
-    has to              => ( is => 'rw', isa  => 'Str', required => 1, );
-    has txn             => ( is => 'rw', isa  => 'Str', required => 1, );
-    has comment         => ( is => 'rw', isa  => 'Str', required => 1, );
-    has sms_notify      => ( is => 'rw', isa  => 'Bool', default => 0, );
-    has call_notify     => ( is => 'rw', isa  => 'Bool', default => 0, );
-    has confirm_timeout => ( is => 'rw', isa  => 'Int', default => 30 * 24, );
+    has amount          => ( is => 'rw', isa  => Num, required => 1, );
+    has to              => ( is => 'rw', isa  => Str, required => 1, );
+    has txn             => ( is => 'rw', isa  => Str, required => 1, );
+    has comment         => ( is => 'rw', isa  => Str, required => 1, );
+    has sms_notify      => ( is => 'rw', isa  => Bool, default => 0, );
+    has call_notify     => ( is => 'rw', isa  => Bool, default => 0, );
+    has confirm_timeout => ( is => 'rw', isa  => Int, default => 30 * 24, );
 
-    augment create_request => sub {
+    augment create_request() {
         my $self = shift;
         
         my $xml = $self->_create_simple_node('request');
@@ -24,7 +24,7 @@ class Business::Qiwi::Bill extends Business::Qiwi::Request {
         $xml->appendChild( $self->_create_extra_node('ltime', $self->confirm_timeout) );
         
         $xml
-    };
+    }
 };
 
 no Moose;

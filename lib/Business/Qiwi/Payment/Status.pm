@@ -1,11 +1,11 @@
 use MooseX::Declare;
 
 class Business::Qiwi::Payment::Status extends Business::Qiwi::Request {
-    has '+request_type' => ( default => 10, );
+    has +request_type => ( default => 10, );
 
-    has 'txns' => ( is => 'rw', isa => 'Business::Qiwi::MooseSubtypes::TxnsList', coerce => 1, required => 1, );
+    has txns => ( is => 'rw', isa => TxnsList, coerce => 1, required => 1, );
 
-    augment create_request => sub {
+    augment create_request() {
         my $self = shift;
         
         my $status = $self->_create_simple_node('status', undef, {count => scalar @{$self->txns}});
@@ -18,9 +18,9 @@ class Business::Qiwi::Payment::Status extends Business::Qiwi::Request {
         $xml->appendChild($status);
         
         $xml
-    };
+    }
 
-    augment parse_raw_response => sub {
+    augment parse_raw_response() {
         my $self = shift;
         
         return {
@@ -34,8 +34,8 @@ class Business::Qiwi::Payment::Status extends Business::Qiwi::Request {
             }
             $self->_xml_response->find('/response/payment')->get_nodelist
         }
-    };
-};
+    }
+}
 
 no Moose;
 no MooseX::Declare;
