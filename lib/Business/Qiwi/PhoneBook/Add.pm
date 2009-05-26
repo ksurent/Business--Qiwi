@@ -1,13 +1,13 @@
 use MooseX::Declare;
 
 class Business::Qiwi::PhoneBook::Add extends Business::Qiwi::Request {
-    has '+request_type' => ( default => 38, );
+    use Business::Qiwi::MooseSubtypes qw(EntriesList);
 
-    has entry => ( is => 'rw', isa => 'Business::Qiwi::MooseSubtypes::EntriesList', coerce => 1, required => 1, );
+    has +request_type => ( default => 38, );
 
-    augment create_request => sub {
-        my $self = shift;
-        
+    has entry => ( is => 'rw', isa => EntriesList, coerce => 1, required => 1, );
+
+    augment create_request() {
         my $items = $self->_create_simple_node('item-list');
         foreach( @{ $self->entry } ) {
             my $item = $self->_create_simple_node('item');
@@ -23,14 +23,12 @@ class Business::Qiwi::PhoneBook::Add extends Business::Qiwi::Request {
         $xml->appendChild($items);
         
         $xml
-    };
+    }
 
-    augment parse_raw_response => sub {
-        my $self = shift;
-        
+    augment parse_raw_response() {
         return [map($_->data, $self->_xml_response->find('/response/id')->get_nodelist)]
-    };
-};
+    }
+}
 
 no Moose;
 no MooseX::Declare;

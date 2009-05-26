@@ -1,22 +1,23 @@
 use MooseX::Declare;
 
 class Business::Qiwi::Registration extends Business::Qiwi::Request {
+    use MooseX::Types::Moose qw(Str);
+    use Business::Qiwi::MooseSubtypes qw(Date);
+
     require Digest::MD5;
 
-    has '+request_type' => ( default => 20, );
+    has +request_type => ( default => 20, );
 
     has password => (
-        is => 'rw',
-        isa => Str,
+        is       => 'rw',
+        isa      => Str,
         required => 1,
-        trigger => sub { shift->password( Digest::MD5::md5_hex(shift) ) },
+        trigger  => sub { shift->password( Digest::MD5::md5_hex(shift) ) },
     );
     has phone   => ( is => 'rw', isa => Str, required => 1, );
-    has confirm => ( is => 'rw', isa => Str, lazy => 1, default => undef, );
+    has confirm => ( is => 'rw', isa => Str, lazy => 1, default => undef, predicate => 'has_confirm', );
 
     augment create_request() {
-        my $self = shift;
-        
         my $xml = $self->_create_simple_node('request');
         $xml->appendChild( $self->_create_simple_node('request-type', $self->request_type) );
         $xml->appendChild( $self->_create_extra_node('password-md5', $self->password) );

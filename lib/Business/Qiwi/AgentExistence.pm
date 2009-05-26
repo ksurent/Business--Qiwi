@@ -1,7 +1,9 @@
 use MooseX::Declare;
 
 class Business::Qiwi::AgentExistence extends Business::Qiwi::Request {
-    has '+request_type' => ( default => 32, );
+    use MooseX::Types::Moose qw(Str);
+
+    has +request_type => ( default => 32, );
 
     has phone => ( is => 'rw', isa => Str, required => 1, );
 
@@ -15,7 +17,7 @@ class Business::Qiwi::AgentExistence extends Business::Qiwi::Request {
     augment parse_raw_response() {
         return $self->_xml_response->findvalue('/response/exist') ? 1 : 0
     }
-};
+}
 
 no Moose;
 no MooseX::Declare;

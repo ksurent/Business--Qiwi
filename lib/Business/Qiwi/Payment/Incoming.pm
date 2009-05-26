@@ -1,10 +1,12 @@
 use MooseX::Declare;
 
 class Business::Qiwi::Payment::Incoming extends Business::Qiwi::Request {
+    use Business::Qiwi::MooseSubtypes qw(Date);
+
     has +request_type => ( default => 31, );
 
-    has since => ( is => 'rw', isa => 'Business::Qiwi::MooseSubtypes::Date', required => 1, );
-    has to    => ( is => 'rw', isa => 'Business::Qiwi::MooseSubtypes::Date', required => 1, );
+    has since => ( is => 'rw', isa => Date, required => 1, );
+    has to    => ( is => 'rw', isa => Date, required => 1, );
 
     augment create_request() {
         my $date_since = $self->_create_extra_node('date-from', $self->since);

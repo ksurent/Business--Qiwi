@@ -6,15 +6,15 @@ class Business::Qiwi::Request extends Business::Qiwi {
     use XML::LibXML;
     require LWP::UserAgent;
 
-#has cipher        => ( is => 'rw', isa => 'Bool', default => 0, );
+#has cipher        => ( is => 'rw', isa => Bool, default => 0, );
 #has ciphering_key => (
 #    is      => 'ro',
-#    isa     => 'Str',
+#    isa     => Str,
 #    lazy    => 1,
 #    default => sub {
 #        my $self = shift;
 #        
-#        eval "require Digest::MD5" or Moose->throw_error('Crypt::TripleDES must be installed to enable ciphering');
+#        require Digest::MD5;
 #        
 #        my @key = ((0x00) x 8, split('', Digest::MD5::md5($self->password)));
 #        my @serial = split('', Digest::MD5::md5($self->serial));

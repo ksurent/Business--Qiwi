@@ -1,13 +1,13 @@
 use MooseX::Declare;
 
 class Business::Qiwi::Payment::Status extends Business::Qiwi::Request {
+    use Business::Qiwi::MooseSubtypes qw(TxnsList);
+
     has +request_type => ( default => 10, );
 
     has txns => ( is => 'rw', isa => TxnsList, coerce => 1, required => 1, );
 
     augment create_request() {
-        my $self = shift;
-        
         my $status = $self->_create_simple_node('status', undef, {count => scalar @{$self->txns}});
         foreach( @{ $self->txns } ) {
             my $payment = $self->_create_simple_node('payment');
@@ -21,8 +21,6 @@ class Business::Qiwi::Payment::Status extends Business::Qiwi::Request {
     }
 
     augment parse_raw_response() {
-        my $self = shift;
-        
         return {
             map {
                 my $payment_data = $_->getAttribute('final-status') eq 'true'

@@ -1,7 +1,9 @@
 use MooseX::Declare;
 
 class Business::Qiwi::Payment extends Business::Qiwi::Request {
-    has '+request_type' => ( default => 10, );
+    use MooseX::Types::Moose qw(Int Num Str);
+
+    has +request_type => ( default => 10, );
 
     has to         => ( is => 'rw', isa => Str, required => 1, );
     has service    => ( is => 'rw', isa => Int, required => 1, );
@@ -11,8 +13,6 @@ class Business::Qiwi::Payment extends Business::Qiwi::Request {
     has receipt_id => ( is => 'rw', isa => Int, default => int(rand 999999), );
 
     augment create_request() {
-        my $self = shift;
-        
         my $from = $self->_create_simple_node('from');
         $from->appendChild( $self->_create_simple_node('amount', $self->amount) );
         
@@ -45,8 +45,6 @@ class Business::Qiwi::Payment extends Business::Qiwi::Request {
     }
 
     augment parse_raw_response() {
-        my $self = shift;
-        
         my $payment = $self->_xml_response->find('/response/payment[1]')->shift;
         
         return {txn    => $payment->getAttribute('transaction-number'),

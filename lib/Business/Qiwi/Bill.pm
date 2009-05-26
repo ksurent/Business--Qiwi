@@ -1,7 +1,9 @@
 use MooseX::Declare;
 
 class Business::Qiwi::Bill extends Business::Qiwi::Request {
-    has '+request_type' => ( default => 30, );
+    use MooseX::Types::Moose qw(Int Num Str Bool);
+
+    has +request_type => ( default => 30, );
 
     has amount          => ( is => 'rw', isa  => Num, required => 1, );
     has to              => ( is => 'rw', isa  => Str, required => 1, );
@@ -12,8 +14,6 @@ class Business::Qiwi::Bill extends Business::Qiwi::Request {
     has confirm_timeout => ( is => 'rw', isa  => Int, default => 30 * 24, );
 
     augment create_request() {
-        my $self = shift;
-        
         my $xml = $self->_create_simple_node('request');
         $xml->appendChild( $self->_create_extra_node('amount', $self->amount) );
         $xml->appendChild( $self->_create_extra_node('to-account', $self->to) );
@@ -25,7 +25,7 @@ class Business::Qiwi::Bill extends Business::Qiwi::Request {
         
         $xml
     }
-};
+}
 
 no Moose;
 no MooseX::Declare;

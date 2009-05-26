@@ -1,13 +1,13 @@
 use MooseX::Declare;
 
 class Business::Qiwi::Bill::Status extends Business::Qiwi::Request {
+    use Business::Qiwi::MooseSubtypes qw(BillsList);
+
     has +request_type => ( default => 33, );
 
     has bills => ( is => 'rw', isa => BillsList, coerce => 1, required => 1, );
 
     augment create_request() {
-        my $self = shift;
-        
         my $bills = $self->_create_simple_node('bills-list');
         $bills->appendChild( $self->_create_simple_node('bill', undef, {id => $_}) ) foreach @{ $self->bills };
         
@@ -18,8 +18,6 @@ class Business::Qiwi::Bill::Status extends Business::Qiwi::Request {
     }
 
     augment parse_raw_response() {
-        my $self = shift;
-        
         my @statuses;
         foreach($self->_xml_response->find('/response/bills-list/bill')->get_nodelist) {
             my $status = $_->getAttribute('status');

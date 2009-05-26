@@ -1,7 +1,7 @@
 use MooseX::Declare;
 
 class  Business::Qiwi::Balance extends Business::Qiwi::Request {
-    has '+request_type' => ( default => 3, );
+    has +request_type => ( default => 3, );
 
     augment create_request() {
         return $self->_create_simple_node('request')
@@ -10,7 +10,7 @@ class  Business::Qiwi::Balance extends Business::Qiwi::Request {
     augment parse_raw_response() {
         return $self->_xml_response->findvalue('/response/extra[@name="BALANCE"]')
     }
-};
+}
 
 no Moose;
 no MooseX::Declare;
