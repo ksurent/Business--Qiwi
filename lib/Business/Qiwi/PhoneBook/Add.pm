@@ -26,7 +26,7 @@ class Business::Qiwi::PhoneBook::Add extends Business::Qiwi::Request {
     }
 
     augment parse_raw_response() {
-        return [map($_->data, $self->_xml_response->find('/response/id')->get_nodelist)]
+        return [map $_->textContent, $self->_xml_response->find('/response/add-list/id')->get_nodelist]
     }
 }
 
