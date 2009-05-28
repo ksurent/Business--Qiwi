@@ -226,8 +226,6 @@ Business::Qiwi - Perl API to QIWI payment system
     );
     my $balance = $qiwi->get_balance;
 
-=back
-
 =head1 METHODS
 
 =head2 Constructor
@@ -238,23 +236,25 @@ Constructor arguments:
 
 =item * $trm_id! -> Str
 
-    Account terminal id (login)
+Account terminal id (login)
 
 =item * $serial! -> Str
 
-    Account confirmation code
+Account confirmation code
 
 =item * $password! -> Str
 
-    Account password
+Account password
 
-=item $cipher? -> Bool
+=item * $cipher? -> Bool
 
-    Indicates if outgoing packets must be ciphered (note that, incoming packets are always plain XML)
+Indicates if outgoing packets must be ciphered (note that, incoming packets are always plain XML)
+
+Not implemented yet
 
 =back
 
-=head 2 Operations
+=head2 Operations
 
 Methods which represents operations with your account
 
@@ -262,87 +262,87 @@ Methods which represents operations with your account
 
 =item * create_invoice(Num $amount, Str $to, Str $txn, Str $comment, Bool $sms_notify?, Bool $call_notify?, Int $confirm_time?) -> undef
 
-    Create outgoing QIWI invoice
+Create outgoing QIWI invoice
 
-    Note: for operation result check out L<code>
+Note: for operation result check out C<res_code>
 
 =item * get_invoice_status(InvoicesList :$invoice) -> ArrayRef[HashRef]
 
-    Get outgoing invoice's status
-    
+Get outgoing invoice's status
+
 =item * accept_invoice(Int :$qiwi_txn_id?, Int :$trm_txn_id?) -> undef
 
-    Confirm given invoice (works both for incoming and outgoing invoices)
+Confirm given invoice (works both for incoming and outgoing invoices)
 
 =item * reject_invoice(Int :$qiwi_txn_id?, Int :$trm_txn_id?) -> undef
 
-    Disconfirm given invoice (works only for outgoing invoices)
+Disconfirm given invoice (works only for outgoing invoices)
 
 =item * pay(Str :$to, Int :$service, Num :$amount, Str :$comment, Int :$id, Int :$receipt_id?) -> HashRef
 
-    Transfer money from your account
+Transfer money from your account
 
 =item * get_payment_status(TxnsList :$txns) -> HashRef
 
-    Check your payment's status
+Check your payment's status
 
 =item * get_incoming_payments(Date :$since, Date :$to) -> ArrayRef[HashRef]
 
-    Get incoming payments
+Get incoming payments
 
 =item * get_phonebook() -> ArrayRef[HashRef]
 
-    Get entries from your QIWI phonebook
+Get entries from your QIWI phonebook
 
 =item * add_to_phonebook(EntriesList :$entry) -> ArrayRef[Int]
 
-    Add entry to your QIWI phonebook
-    
-    (if you don't want to transfer money to given account just set C<amount> to 0)
+Add entry to your QIWI phonebook (if you don't want to transfer money to given account just set C<amount> to 0)
 
 =item * delete_from_phonebook(EntriesList :$id) -> ArrayRef[Int]
 
-    Delete entry from your QIWI phonebook
+Delete entry from your QIWI phonebook
 
 =item * register(Str :$password, Str :$phone) -> undef
 
-    Register $phone as QIWI agent
+Register C<$phone> as QIWI agent
 
 =item * confirm_registration(Str :$password, Str :$phone, Str :$confirm) -> undef
 
-    Confirm $phone's registration
+Confirm C<$phone>'s registration
 
 =item * get_report(Date :$since, Date :$to) -> ArrayRef[HashRef]
 
-    Get detailed report of payments made
+Get detailed report of payments made
 
 =item * get_balance() -> Num
 
-    Get your QIWI balance
+Get your QIWI balance
 
 =back
 
 =head2 Auxiliary methods
 
+=over 4
+
 =item * res_code -> Int
     
-    Numeric code of last operation result
+Numeric code of last operation result
 
 =item * res_msg -> Str
     
-    Textual description of C<res_code>
+Textual description of C<res_code>
     
-    Not implemented yet
+Not implemented yet
 
 =item * is_success -> Bool
 
-    Returns true if no errors occured during last operation
+Returns true if no errors occured during last operation
 
 =item * is_fatal -> Bool
 
-    Indicate if occured error is fatal
+Indicate if occured error is fatal
 
-    Need to be called only if C<is_fatal> returned false
+Need to be called only if C<is_fatal> returned false
 
 =back
 
