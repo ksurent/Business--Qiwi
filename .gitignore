@@ -3,3 +3,4 @@ Makefile
 blib
 runtests.pl
 realtest.pl
+qiwi_statuses
