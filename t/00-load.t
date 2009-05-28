@@ -5,10 +5,10 @@ BEGIN {
     use_ok 'Business::Qiwi::Request';
     use_ok 'Business::Qiwi::MooseSubtypes';
     
-    use_ok 'Business::Qiwi::Bill';
-    use_ok 'Business::Qiwi::Bill::Status';
-    use_ok 'Business::Qiwi::Bill::Accept';
-    use_ok 'Business::Qiwi::Bill::Reject';
+    use_ok 'Business::Qiwi::Invoice';
+    use_ok 'Business::Qiwi::Invoice::Status';
+    use_ok 'Business::Qiwi::Invoice::Accept';
+    use_ok 'Business::Qiwi::Invoice::Reject';
     
     use_ok 'Business::Qiwi::Payment';
     use_ok 'Business::Qiwi::Payment::Status';
