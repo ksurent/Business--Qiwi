@@ -5,11 +5,11 @@ class Business::Qiwi::Payment::Status extends Business::Qiwi::Request {
 
     has +request_type => ( default => 10, );
 
-    has txns => ( is => 'rw', isa => TxnsList, coerce => 1, required => 1, );
+    has txn => ( is => 'rw', isa => TxnsList, coerce => 1, required => 1, );
 
     augment create_request() {
-        my $status = $self->_create_simple_node('status', undef, {count => scalar @{$self->txns}});
-        foreach( @{ $self->txns } ) {
+        my $status = $self->_create_simple_node('status', undef, {count => scalar @{$self->txn}});
+        foreach( @{ $self->txn } ) {
             my $payment = $self->_create_simple_node('payment');
             $payment->appendChild( $self->_create_simple_node('transaction-number', $_) );
             $status->appendChild($payment)

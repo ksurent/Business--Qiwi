@@ -17,23 +17,13 @@ class Business::Qiwi::Report extends Business::Qiwi::Request {
     }
 
     augment parse_raw_response() {
-        my @payments;
-        foreach($self->_xml_response->find('/response/payments-list/payment')->get_nodelist) {
-            my $payment = {
-                status   => $_->findvalue('./status'),
-                txn_id   => $_->findvalue('./transaction-number'),
-                txn_date => $_->findvalue('./txn-date'),
-                amount   => $_->findvalue('./to/amount'),
-                to       => $_->findvalue('./to/account-number'),
-                service  => $_->findvalue('./to/service-id'),
-            };
-            if($payment->{status} == 60) { $payment->{status} = 1 }
-            else                         { $payment->{status} = 0 }
-            
-            push @payments, $payment
-        }
-        
-        \@payments
+        [map +{status   => $_->findvalue('./status'),
+              txn_id   => $_->findvalue('./transaction-number'),
+              txn_date => $_->findvalue('./txn-date'),
+              amount   => $_->findvalue('./to/amount'),
+              to       => $_->findvalue('./to/account-number'),
+              service  => $_->findvalue('./to/service-id'),},
+            $self->_xml_response->find('/response/payments-list/payment')->get_nodelist]
     }
 }
 

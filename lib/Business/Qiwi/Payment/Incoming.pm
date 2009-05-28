@@ -30,7 +30,7 @@ class Business::Qiwi::Payment::Incoming extends Business::Qiwi::Request {
         return [
             map +{id         => $_->findvalue('./transaction-number'),
                   date       => $_->findvalue('./txn-date'),
-                  status_id  => $_->findvalue('./status-id'),
+                  status     => $_->findvalue('./status-id'),
                   status_msg => $_->findvalue('./status-msg'),
                   result_msg => $_->findvalue('./result-msg'),
                   from       => $_->findvalue('./from-agt'),
