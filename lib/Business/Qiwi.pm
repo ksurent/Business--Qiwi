@@ -6,16 +6,29 @@
 use MooseX::Declare;
 
 class Business::Qiwi {
-    use MooseX::Types::Moose qw(Num Int Str Bool HashRef);
-    use Business::Qiwi::MooseSubtypes qw(Date EntriesList IdsList TxnsList BillsList);
+    use MooseX::Types::Moose qw(Num Int Str Bool HashRef Object);
+    use Business::Qiwi::MooseSubtypes qw(Date EntriesList IdsList TxnsList InvoicesList);
 
     has trm_id   => ( is => 'rw', isa => Str, required => 1, );
     has password => ( is => 'rw', isa => Str, required => 1, );
     has serial   => ( is => 'rw', isa => Str, required => 1, );
+#    has cipher   => ( is => 'rw', isa => Bool, default => 0, );
 
-    method create_bill(Num :$amount, Str :$to, Str :$txn, Str :$comment, Bool :$sms_notify?, Bool :$call_notify?, Int :$confirm_time?) {
-        return $self->_create_object(
-            'Bill',
+    has _request_instance => (
+        is         => 'rw',
+        isa        => Object,
+        lazy_build => 1,
+        handles    => {
+            is_fatal   => 'fatal',
+            is_success => 'success',
+            res_code   => 'code',
+#            res_msg    => 'message',
+        },
+    );
+
+    method create_invoice(Num :$amount, Str :$to, Str :$txn, Str :$comment, Bool :$sms_notify?, Bool :$call_notify?, Int :$confirm_time?) {
+        return $self->_instantiate_and_execute(
+            'Invoice',
             {
                 amount       => $amount,
                 to           => $to,
@@ -28,34 +41,18 @@ class Business::Qiwi {
         )
     }
 
-    method get_bill_status(BillsList :$bill) {
-        return $self->_create_object(
-            'Bill::Status',
+    method get_invoice_status(Int|InvoicesList :$invoice) {
+        return $self->_instantiate_and_execute(
+            'Invoice::Status',
             {
-                bill => $bill,
+                invoice => $invoice,
             },
         )
     }
 
-    method accept_bill(Int :$qiwi_txn_id?, Int :$trm_txn_id?) {
-        return $self->_create_object(
-            'Bill::Accept',
-            {
-                defined $qiwi_txn_id
-                    ? (qiwi_txn_id => $qiwi_txn_id)
-                    : (trm_txn_id  => $trm_txn_id)
-            },
-        )
-    }
-
-    before accept_bill(Int :$qiwi_txn_id?, Int :$trm_txn_id?) {
-        Moose->throw_error('You must specify either qiwi_txn_id or trm_txn_id argument')
-            if not defined $qiwi_txn_id and not defined $trm_txn_id
-    }
-
-    method reject_bill(Int :$qiwi_txn_id?, Int :$trm_txn_id?) {
-        return $self->_create_object(
-            'Bill::Reject',
+    method accept_invoice(Int :$qiwi_txn_id?, Int :$trm_txn_id?) {
+        return $self->_instantiate_and_execute(
+            'Invoice::Accept',
             {
                 defined $qiwi_txn_id
                     ? (qiwi_txn_id => $qiwi_txn_id)
@@ -64,13 +61,29 @@ class Business::Qiwi {
         )
     }
 
-    before reject_bill(Int :$qiwi_txn_id?, Int :$trm_txn_id?) {
-        Moose->throw_error('You must specify either qiwi_txn_id or trm_txn_id argument')
-            if not defined $qiwi_txn_id and not defined $trm_txn_id
+#    before accept_invoice(Int :$qiwi_txn_id?, Int :$trm_txn_id?) {
+#        Moose->throw_error('You must specify either qiwi_txn_id or trm_txn_id argument')
+#            if not defined $qiwi_txn_id and not defined $trm_txn_id
+#    }
+
+    method reject_invoice(Int :$qiwi_txn_id?, Int :$trm_txn_id?) {
+        return $self->_instantiate_and_execute(
+            'Invoice::Reject',
+            {
+                defined $qiwi_txn_id
+                    ? (qiwi_txn_id => $qiwi_txn_id)
+                    : (trm_txn_id  => $trm_txn_id)
+            },
+        )
     }
+
+#    before reject_invoice(Int :$qiwi_txn_id?, Int :$trm_txn_id?) {
+#        Moose->throw_error('You must specify either qiwi_txn_id or trm_txn_id argument')
+#            if not defined $qiwi_txn_id and not defined $trm_txn_id
+#    }
 
     method pay(Str :$to, Int :$service, Num :$amount, Str :$comment, Int :$id, Int :$receipt_id?) {
-        return $self->_create_object(
+        return $self->_instantiate_and_execute(
             'Payment',
             {
                 to         => $to,
@@ -83,17 +96,17 @@ class Business::Qiwi {
         )
     }
 
-    method get_payment_status(TxnsList :$txns) {
-        return $self->_create_object(
+    method get_payment_status(Int|TxnsList :$txn) {
+        return $self->_instantiate_and_execute(
             'Payment::Status',
             {
-                txns => $txns,
+                txn => $txn,
             },
         )
     }
 
     method get_incoming_payments(Date :$since, Date :$to) {
-        return $self->_create_object(
+        return $self->_instantiate_and_execute(
             'Payment::Incoming',
             {
                 since => $since,
@@ -102,22 +115,22 @@ class Business::Qiwi {
         )
     }
 
-    method get_phone_book() {
-        return $self->_create_object('Phonebook')
+    method get_phonebook() {
+        return $self->_instantiate_and_execute('PhoneBook')
     }
 
-    method add_to_phonebook(EntriesList :$entry) {
-        return $self->_create_object(
-            'Phonebook::Add',
+    method add_to_phonebook(HashRef|EntriesList :$entry) {
+        return $self->_instantiate_and_execute(
+            'PhoneBook::Add',
             {
                 entry => $entry,
             },
         )
     }
 
-    method delete_from_phonebook(IdsList :$id) {
-        return $self->_create_object(
-            'Phonebook::Delete',
+    method delete_from_phonebook(Int|IdsList :$id) {
+        return $self->_instantiate_and_execute(
+            'PhoneBook::Delete',
             {
                 id => $id,
             },
@@ -125,7 +138,7 @@ class Business::Qiwi {
     }
 
     method register(Str :$password, Str :$phone) {
-       return $self->_create_object(
+       return $self->_instantiate_and_execute(
             'Register',
             {
                 password => $password,
@@ -135,7 +148,7 @@ class Business::Qiwi {
     }
 
     method confirm_registration(Str :$password, Str :$phone, Str :$confirm) {
-        return $self->_create_object(
+        return $self->_instantiate_and_execute(
             'Register',
             {
                 password => $password,
@@ -145,11 +158,8 @@ class Business::Qiwi {
         )
     }
 
-#    method get_code_description(Int $code) {
-#    }
-
     method get_report(Date :$since, Date :$to) {
-        return $self->_create_object(
+        return $self->_instantiate_and_execute(
             'Report',
             {
                 since => $since,
@@ -159,22 +169,40 @@ class Business::Qiwi {
     }
 
     method get_balance() {
-        return $self->_create_object('Balance', {})
+        return $self->_instantiate_and_execute('Balance')
     }
 
-    method _create_object(Str $subclass!, HashRef $args = {}) {
+    method _instantiate(Str $subclass!, HashRef $args = {}) {
+        $self->_clear_request_instance;
+
         my $class = "Business::Qiwi::$subclass";
 
         my $is_loaded = eval "require $class; 1";
         Moose->throw_error("Subclass $class can not be loaded: $@") unless $is_loaded;
+        
+        $self->_request_instance(
+            $class->new(
+                trm_id   => $self->trm_id,
+                serial   => $self->serial,
+                password => $self->password,
+#                cipher   => $self->cipher,
+                %$args,
+            )
+        )
+    }
 
-        my $instance = $class->new(
-            trm_id => $self->trm_id,
-            serial => $self->serial,
-            password => $self->password,
-            %$args,
-        );
-        return $instance->result
+    method _execute() {
+        return unless $self->_has_request_instance;
+
+        $self->_request_instance->create_request;
+        $self->_request_instance->send_request;
+        $self->_request_instance->parse_raw_response;
+        $self->_request_instance->result
+    }
+
+    method _instantiate_and_execute(Str $subclass!, HashRef $args = {}) {
+        $self->_instantiate($subclass, $args);
+        $self->_execute
     }
 }
 
@@ -187,7 +215,7 @@ __END__
 
 =head1 NAME
 
-Business::Qiwi - Implementation of XML protocol for QIWI payments
+Business::Qiwi - Perl API to QIWI payment system
 
 =head1 SYNOPSIS
 
@@ -196,134 +224,125 @@ Business::Qiwi - Implementation of XML protocol for QIWI payments
         serial => 'your confirmation code',
         password => 'your password',
     );
+    my $balance = $qiwi->get_balance;
 
-=head1 DESCRIPTION
-
-...
+=back
 
 =head1 METHODS
 
+=head2 Constructor
+
+Constructor arguments:
+
 =over 4
 
-=item * create_bill(Num $amount, Str $to, Str $txn, Str $comment, Bool $sms_notify?, Bool $call_notify?, Int $confirm_time?)
+=item * $trm_id! -> Str
 
-    ...
+    Account terminal id (login)
 
-    Arguments:
+=item * $serial! -> Str
 
-    Returns:
+    Account confirmation code
 
-=item * get_bill_status()
+=item * $password! -> Str
 
-    Get bill status.
+    Account password
+
+=item $cipher? -> Bool
+
+    Indicates if outgoing packets must be ciphered (note that, incoming packets are always plain XML)
+
+=back
+
+=head 2 Operations
+
+Methods which represents operations with your account
+
+=over 4
+
+=item * create_invoice(Num $amount, Str $to, Str $txn, Str $comment, Bool $sms_notify?, Bool $call_notify?, Int $confirm_time?) -> undef
+
+    Create outgoing QIWI invoice
+
+    Note: for operation result check out L<code>
+
+=item * get_invoice_status(InvoicesList :$invoice) -> ArrayRef[HashRef]
+
+    Get outgoing invoice's status
     
-    Arguments:
+=item * accept_invoice(Int :$qiwi_txn_id?, Int :$trm_txn_id?) -> undef
+
+    Confirm given invoice (works both for incoming and outgoing invoices)
+
+=item * reject_invoice(Int :$qiwi_txn_id?, Int :$trm_txn_id?) -> undef
+
+    Disconfirm given invoice (works only for outgoing invoices)
+
+=item * pay(Str :$to, Int :$service, Num :$amount, Str :$comment, Int :$id, Int :$receipt_id?) -> HashRef
+
+    Transfer money from your account
+
+=item * get_payment_status(TxnsList :$txns) -> HashRef
+
+    Check your payment's status
+
+=item * get_incoming_payments(Date :$since, Date :$to) -> ArrayRef[HashRef]
+
+    Get incoming payments
+
+=item * get_phonebook() -> ArrayRef[HashRef]
+
+    Get entries from your QIWI phonebook
+
+=item * add_to_phonebook(EntriesList :$entry) -> ArrayRef[Int]
+
+    Add entry to your QIWI phonebook
     
-    Returns:
+    (if you don't want to transfer money to given account just set C<amount> to 0)
 
-=item * accept_bill()
+=item * delete_from_phonebook(EntriesList :$id) -> ArrayRef[Int]
 
-    Confirm you are gonna pay this bill.
+    Delete entry from your QIWI phonebook
 
-    Arguments:
+=item * register(Str :$password, Str :$phone) -> undef
 
-    Returns:
+    Register $phone as QIWI agent
 
-=item * reject_bill()
+=item * confirm_registration(Str :$password, Str :$phone, Str :$confirm) -> undef
 
-    Say you are not going to pay this.
+    Confirm $phone's registration
 
-    Arguments:
+=item * get_report(Date :$since, Date :$to) -> ArrayRef[HashRef]
 
-    Returns:
+    Get detailed report of payments made
 
-=item * pay()
+=item * get_balance() -> Num
 
-    Pay for service.
+    Get your QIWI balance
 
-    Arguments:
+=back
 
-    Returns:
+=head2 Auxiliary methods
 
-=item * get_payment_status()
+=item * res_code -> Int
+    
+    Numeric code of last operation result
 
-    Check your payment.
+=item * res_msg -> Str
+    
+    Textual description of C<res_code>
+    
+    Not implemented yet
 
-    Arguments:
+=item * is_success -> Bool
 
-    Returns:
+    Returns true if no errors occured during last operation
 
-=item * get_incoming_payments()
+=item * is_fatal -> Bool
 
-    Get incoming payments.
+    Indicate if occured error is fatal
 
-    Arguments:
-
-    Returns:
-
-=item * get_phone_book()
-
-    Get entries from phonebook.
-
-    Arguments:
-
-    Returns:
-
-=item * add_to_phonebook()
-
-    Add entry to phonebook.
-
-    Arguments:
-
-    Returns:
-
-=item * delete_from_phonebook()
-
-    Delete entry from phonebook.
-
-    Arguments:
-
-    Returns:
-
-=item * register()
-
-    Register somebody as QIWI agent.
-
-    Arguments:
-
-    Returns:
-
-=item * confirm_registration()
-
-    Confirm registration.
-
-    Arguments:
-
-    Register:
-
-=item * get_code_description()
-
-    Get text description of error code.
-
-    Arguments:
-
-    Returns:
-
-=item * get_report()
-
-    Get report for made payments.
-
-    Arguments:
-
-    Returns:
-
-=item * get_balance()
-
-    Get your QUWU balance.
-
-    Arguments:
-
-    Returns:
+    Need to be called only if C<is_fatal> returned false
 
 =back
 
@@ -335,9 +354,11 @@ Business::Qiwi - Implementation of XML protocol for QIWI payments
 
 =item * Implement 'get banks list' request
 
+=item * Implement result code description extraction
+
 =back
 
-=head1 VERSION CONTROL
+=head1 REPOSITORY
 
 L<http://github.com/ksurent/Business--Qiwi/tree/master>
 
