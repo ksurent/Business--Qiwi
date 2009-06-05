@@ -2,12 +2,12 @@ use MooseX::Declare;
 
 class Business::Qiwi::Invoice::Incoming extends Business::Qiwi::Request {
     use MooseX::Types::Moose qw(Int);
-    use Business::Qiwi::MooseSubtypes qw(Date);
+    use Business::Qiwi::MooseSubtypes qw(DateTime);
 
     has +request_type => ( default => 28, );
 
-    has since => ( is => 'rw', isa => Date, required => 1, );
-    has to    => ( is => 'rw', isa => Date, required => 1, );
+    has since => ( is => 'rw', isa => DateTime, required => 1, );
+    has to    => ( is => 'rw', isa => DateTime, required => 1, );
     has direction => ( is => 'ro', isa => Int, default => 0, init_arg => undef, );
 
     augment create_request() {
@@ -24,13 +24,13 @@ class Business::Qiwi::Invoice::Incoming extends Business::Qiwi::Request {
     augment parse_raw_response() {
         return [
             map +{
-                id      => $_->getAttribute('id'),
-                txn     => $_->getAttribute('term-transaction'),
-                date    => $_->getAttribute('bill-date'),
-                amount  => $_->getAttribute('amount'),
-                status  => $_->getAttribute('status'),
+                id      => $_->findvalue('./id'),
+                txn     => $_->findvalue('./term-ransaction'),
+                date    => $_->findvalue('./bill-date'),
+                amount  => $_->findvalue('./amount'),
+                status  => $_->findvalue('./status'),
                 from    => $_->findvalue('./from/trm-id'),
-                comment => $_->getAttribute('comment'),
+                comment => $_->findvalue('./comment'),
             }, $self->_xml_response->find('/response/account-list/account')->get_nodelist
         ]
     }

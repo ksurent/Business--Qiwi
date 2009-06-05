@@ -13,13 +13,14 @@ BEGIN {
     use_ok 'Business::Qiwi::Payment';
     use_ok 'Business::Qiwi::Payment::Status';
     use_ok 'Business::Qiwi::Payment::Incoming';
+    use_ok 'Business::Qiwi::Payment::Outgoing';
+
     
     
     use_ok 'Business::Qiwi::PhoneBook';
     use_ok 'Business::Qiwi::PhoneBook::Add';
     use_ok 'Business::Qiwi::PhoneBook::Delete';
     
-    use_ok 'Business::Qiwi::Report';
     use_ok 'Business::Qiwi::Balance';
     use_ok 'Business::Qiwi::Registration';
 }

@@ -12,7 +12,7 @@ class Business::Qiwi::Request {
     has cipher   => ( is => 'rw', isa => Bool, required => 0, );
 
     has url              => ( is => 'ro', isa => Str, default => 'https://www.mobw.ru/term2/xmlutf.jsp', init_arg => undef, );
-    has protocol_version => ( is => 'ro', isa => Str, default => '4.0', init_arg => undef, );
+    has protocol_version => ( is => 'ro', isa => Str, default => '4.00', init_arg => undef, );
     has request_type     => ( is => 'ro', isa => Int, init_arg => undef, ); 
     has code             => ( is => 'rw', isa => Int, init_arg => undef, );
 #    has message          => ( is => 'rw', isa => Str, init_arg => undef, );
@@ -23,25 +23,25 @@ class Business::Qiwi::Request {
     has _raw_request   => ( is => 'rw', isa => Str, init_arg => undef, );
     has _raw_response  => ( is => 'rw', isa => Str, init_arg => undef, );
     has _xml_response  => ( is => 'rw', isa => 'XML::LibXML::Document', init_arg => undef, clearer => '_clear_xml_response', );
-#    has _ciphering_key => (
-#        is      => 'ro',
-#        isa     => Str,
-#        lazy    => 1,
-#        init_arg => undef,
-#        default => sub {
-#            my $self = shift;
-#            
-#            require Digest::MD5;
-#
-#            my @serial = pack 'c16', map ord, split '', Digest::MD5::md5($self->serial);
-#            my @key    = pack 'c8', 0 x 8;
-#            push @key,   pack 'c16', map ord, split '', Digest::MD5::md5($self->password);
-#
-#            $key[$_] ^= $serial[$_] for 0 .. $#serial;
-#            
-#            join '', @key
-#        },
-#    );
+    has _ciphering_key => (
+        is       => 'ro',
+        isa      => Str,
+        lazy     => 1,
+        init_arg => undef,
+        default  => sub {
+            my $self = shift;
+            
+            require Digest::MD5;
+
+            my @key    = map pack('c', 0x00), 1 .. 8;
+            push @key,   map pack('c', ord), split('', Digest::MD5::md5($self->password));
+            my @serial = map pack('c', ord), split('', Digest::MD5::md5($self->serial));
+
+            $key[$_] ^= $serial[$_] for 0 .. $#serial;
+            
+            join '', @key
+        },
+    );
 
 #    has _messages => (
 #        is       => 'ro',
@@ -64,17 +64,33 @@ class Business::Qiwi::Request {
         $self->_raw_request($xml->toString)
     }
 
-#    after create_request() {
-#        return unless $self->cipher;
-#        
-#        require Crypt::TripleDES;
-#        
-#        $self->_raw_request(
-#            sprintf "Phone%s\n%s",
-#                $self->trm_id,
-#                unpack('H*', Crypt::TripleDES->new->encrypt3($self->_raw_request, $self->_ciphering_key))
-#        )
-#    }
+    after create_request() {
+        return unless $self->cipher;
+
+        my $trm_id = $self->trm_id;
+        if(length $trm_id < 10) {
+            my $pad = '0' x (10 - length $trm_id);
+            $trm_id = $pad . $trm_id
+        }
+
+        require Crypt::CBC;
+
+        my $cipher = Crypt::CBC->new(
+            -key         => $self->_ciphering_key,
+            -literal_key => 1,
+            -iv          => Crypt::CBC->_get_random_bytes(8),
+            -cipher      => 'DES_EDE3',
+            -keysize     => 24,
+            -blocksize   => 8,
+            -padding     => 'space',
+            -header      => 'none',
+        );
+        $cipher->start('e');
+
+        $self->_raw_request( sprintf "Phone%s\n%s", $trm_id, $cipher->encrypt_hex($self->_raw_request) );
+
+        $cipher->finish('e')
+    }
 
     method send_request() {
         my $res = LWP::UserAgent->new->request(

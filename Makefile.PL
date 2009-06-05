@@ -9,7 +9,8 @@ requires 'MooseX::Types';
 requires 'XML::LibXML';
 requires 'LWP::UserAgent';
 requires 'Digest::MD5';
-requires 'Crypt::TripleDES';
+requires 'Crypt::CBC';
+requires 'Crypt::DES_EDE3';
 
 test_requires 'Test::More';
 
