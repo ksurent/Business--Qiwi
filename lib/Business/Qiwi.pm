@@ -1,18 +1,15 @@
-{
-    package Business::Qiwi;
-    our $VERSION = '0.01';
-}
-
 use MooseX::Declare;
 
 class Business::Qiwi {
+    our $VERSION = '0.01';
+
     use MooseX::Types::Moose qw(Num Int Str Bool HashRef Object);
-    use Business::Qiwi::MooseSubtypes qw(Date EntriesList IdsList TxnsList InvoicesList);
+    use Business::Qiwi::MooseSubtypes qw(Date DateTime PBEntry EntriesList IdsList TxnsList);
 
     has trm_id   => ( is => 'rw', isa => Str, required => 1, );
     has password => ( is => 'rw', isa => Str, required => 1, );
     has serial   => ( is => 'rw', isa => Str, required => 1, );
-#    has cipher   => ( is => 'rw', isa => Bool, default => 0, );
+    has cipher   => ( is => 'rw', isa => Bool, default => 0, );
 
     has _request_instance => (
         is         => 'rw',
@@ -41,11 +38,31 @@ class Business::Qiwi {
         )
     }
 
-    method get_invoice_status(Int|InvoicesList :$invoice) {
+    method get_invoice_status(Int|TxnsList :$txn) {
         return $self->_instantiate_and_execute(
             'Invoice::Status',
             {
-                invoice => $invoice,
+               txn => $txn,
+            },
+        )
+    }
+
+    method get_incoming_invoices(DateTime :$since, DateTime :$to) {
+        return $self->_instantiate_and_execute(
+            'Invoice::Incoming',
+            {
+                since => $since,
+                to    => $to,
+            },
+        )
+    }
+
+    method get_outgoing_invoices(DateTime :$since, DateTime :$to) {
+        return $self->_instantiate_and_execute(
+            'Invoice::Outgoing',
+            {
+                since => $since,
+                to    => $to,
             },
         )
     }
@@ -115,11 +132,21 @@ class Business::Qiwi {
         )
     }
 
+    method get_outgoing_payments(Date :$since, Date :$to) {
+        return $self->_instantiate_and_execute(
+            'Payment::Outgoing',
+            {
+                since => $since,
+                to    => $to,
+            },
+        )
+    }
+
     method get_phonebook() {
         return $self->_instantiate_and_execute('PhoneBook')
     }
 
-    method add_to_phonebook(HashRef|EntriesList :$entry) {
+    method add_to_phonebook(PBEntry|EntriesList :$entry) {
         return $self->_instantiate_and_execute(
             'PhoneBook::Add',
             {
@@ -158,16 +185,6 @@ class Business::Qiwi {
         )
     }
 
-    method get_report(Date :$since, Date :$to) {
-        return $self->_instantiate_and_execute(
-            'Report',
-            {
-                since => $since,
-                to    => $to,
-            },
-        )
-    }
-
     method get_balance() {
         return $self->_instantiate_and_execute('Balance')
     }
@@ -185,7 +202,7 @@ class Business::Qiwi {
                 trm_id   => $self->trm_id,
                 serial   => $self->serial,
                 password => $self->password,
-#                cipher   => $self->cipher,
+                cipher   => $self->cipher,
                 %$args,
             )
         )
@@ -260,15 +277,23 @@ Methods which represents operations with your account
 
 =over 4
 
-=item * create_invoice(Num $amount, Str $to, Str $txn, Str $comment, Bool $sms_notify?, Bool $call_notify?, Int $confirm_time?) -> undef
+=item * create_invoice(Num :$amount, Str :$to, Str :$txn, Str :$comment, Bool :$sms_notify?, Bool :$call_notify?, Int :$confirm_time?) -> undef
 
 Create outgoing QIWI invoice
 
 Note: for operation result check out C<res_code>
 
-=item * get_invoice_status(InvoicesList :$invoice) -> ArrayRef[HashRef]
+=item * get_incoming_invoices(DateTime :$since, DateTime :$to) -> ArrayRef[HashRef]
 
-Get outgoing invoice's status
+Get invoices for you
+
+=item * get_outgoing_invoices(DateTime :$since, DateTime :$to) -> ArrayRef[HashRef]
+
+Get invoices you created
+
+=item * get_invoice_status(Int|TxnsList :$txn) -> ArrayRef[HashRef]
+
+Get given outgoing invoice's info
 
 =item * accept_invoice(Int :$qiwi_txn_id?, Int :$trm_txn_id?) -> undef
 
@@ -282,23 +307,27 @@ Disconfirm given invoice (works only for outgoing invoices)
 
 Transfer money from your account
 
-=item * get_payment_status(TxnsList :$txns) -> HashRef
+=item * get_payment_status(Int|TxnsList :$txns) -> HashRef
 
-Check your payment's status
+Get given payment's info
 
 =item * get_incoming_payments(Date :$since, Date :$to) -> ArrayRef[HashRef]
 
 Get incoming payments
 
+=item * get_outgoing_payments(Date :$since, Date :$to) -> ArrayRef[HashRef]
+
+Get detailed report of payments made
+
 =item * get_phonebook() -> ArrayRef[HashRef]
 
 Get entries from your QIWI phonebook
 
-=item * add_to_phonebook(EntriesList :$entry) -> ArrayRef[Int]
+=item * add_to_phonebook(PBEntry|EntriesList :$entry) -> ArrayRef[Int]
 
 Add entry to your QIWI phonebook (if you don't want to transfer money to given account just set C<amount> to 0)
 
-=item * delete_from_phonebook(EntriesList :$id) -> ArrayRef[Int]
+=item * delete_from_phonebook(PBEntry|EntriesList :$id) -> ArrayRef[Int]
 
 Delete entry from your QIWI phonebook
 
@@ -309,10 +338,6 @@ Register C<$phone> as QIWI agent
 =item * confirm_registration(Str :$password, Str :$phone, Str :$confirm) -> undef
 
 Confirm C<$phone>'s registration
-
-=item * get_report(Date :$since, Date :$to) -> ArrayRef[HashRef]
-
-Get detailed report of payments made
 
 =item * get_balance() -> Num
 
