@@ -35,6 +35,7 @@ class Business::Qiwi::Request {
 
             my @key    = map pack('c', 0x00), 1 .. 8;
             push @key,   map pack('c', ord), split('', Digest::MD5::md5($self->password));
+
             my @serial = map pack('c', ord), split('', Digest::MD5::md5($self->serial));
 
             $key[$_] ^= $serial[$_] for 0 .. $#serial;
